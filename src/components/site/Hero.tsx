@@ -12,6 +12,8 @@ import { type Phase, SlideArt } from "./SlideArt";
 
 const SLIDE_MS = 5000;
 const WIPE_S = 0.9;
+/** The indicator waits for the headline and food to land before it starts filling. */
+const SETTLE_MS = 1100;
 
 type Show = { index: number; previous: number | null; direction: 1 | -1; turn: number };
 
@@ -34,12 +36,14 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
   const mx = useSpring(0, { stiffness: 60, damping: 18 });
   const my = useSpring(0, { stiffness: 60, damping: 18 });
 
+  const settleUntil = useRef(0);
   const go = useCallback(
     (target: number, direction: 1 | -1) => {
       progress.set(0);
+      if (!reduced) settleUntil.current = performance.now() + SETTLE_MS;
       setShow((s) => (target === s.index ? s : { index: target, previous: s.index, direction, turn: s.turn + 1 }));
     },
-    [progress],
+    [progress, reduced],
   );
   const next = useCallback(() => go((index + 1) % count, 1), [go, index, count]);
   const prev = useCallback(() => go((index - 1 + count) % count, -1), [go, index, count]);
@@ -74,10 +78,11 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
     if (count < 2) return;
     let frame = 0;
     let last = performance.now();
+    if (!reduced) settleUntil.current = last + SETTLE_MS;
     const tick = (now: number) => {
       const dt = Math.min(now - last, 100);
       last = now;
-      if (!pausedRef.current) {
+      if (!pausedRef.current && now >= settleUntil.current) {
         const p = progress.get() + dt / SLIDE_MS;
         if (p >= 1) nextRef.current();
         else progress.set(p);
@@ -86,7 +91,7 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [count, progress]);
+  }, [count, progress, reduced]);
 
   const swipe = useRef<{ x: number; y: number } | null>(null);
   function onPointerDown(e: PointerEvent) {
@@ -188,8 +193,9 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
               key={`${slide._id}-${slide.featured._id}`}
               initial={{ opacity: 0, y: reduced ? 0 : 24 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: reduced ? 0 : 12 }}
-              transition={{ duration: 0.45, delay: show.turn === 0 ? 0.6 : 0.5, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ opacity: 0, y: reduced ? 0 : 12, transition: { duration: 0.25 } }}
+              // After the food has landed, so the card never competes with the entrance.
+              transition={{ duration: 0.5, delay: reduced ? 0 : show.turn === 0 ? 0.95 : 1.1, ease: [0.22, 1, 0.36, 1] }}
             >
               <FeaturedCard slide={slide} />
             </motion.div>
@@ -207,7 +213,7 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
                   aria-selected={i === index}
                   aria-label={`Show ${s.categoryName}`}
                   onClick={() => go(i, i > index ? 1 : -1)}
-                  className="group relative h-1.5 overflow-hidden rounded-full transition-all"
+                  className="group relative h-1.5 overflow-hidden rounded-full transition-[width] duration-500 ease-out"
                   style={{ width: i === index ? 44 : 14, background: `color-mix(in oklab, ${ink} 28%, transparent)` }}
                 >
                   {i === index && (

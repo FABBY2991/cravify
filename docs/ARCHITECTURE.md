@@ -33,6 +33,29 @@ loading state.
 | `convex/assets.ts` | CLI-only (internal) hooks for `scripts/import-images.mjs` |
 | `convex/demo.ts`, `seed.ts`, `crons.ts` | Sample orders, reset, seeding, 30-day purge |
 
+## Homepage motion
+
+All motion uses Motion (`motion/react`); people who ask for reduced motion get
+the static layout (no entrances, no focus move, no autoplay until they press play).
+
+- **Hero** (`SlideArt.tsx`): the headline lands first, then the food falls in
+  on a restrained spring with a separate ground shadow; the outgoing slide
+  animates out from its resting state. Parallax moves in whole pixels so the
+  photo is never resampled. The slide indicator starts filling only once the
+  food has landed (`SETTLE_MS` in `Hero.tsx`).
+- **Focus cards** (`MenuSection.tsx`): hovering a menu card (or tapping it on
+  a touch screen) glides it part-way to the middle of the screen, a little
+  larger, above a veil that blurs and dims the rest. The `<li>` stays in the
+  grid as the hover target and measure; only the card inside moves. Focus
+  waits for hover intent and for scrolling to stop; Escape, scrolling away,
+  resizing or tapping the veil lets it go.
+- **Scroll entrances** (`reveal.ts`): cards come down a touch into place, once,
+  a row at a time.
+- **Cart** (`CartDrawer.tsx`): slower ease-out open, softer close, rows and
+  totals settle in one after another; each row is washed with the food's own
+  colour, read from its photo by `lib/useImageTint.ts` (category colour until
+  then, or if the photo can't be read).
+
 ## Data model
 
 | Table | Holds | Notes |

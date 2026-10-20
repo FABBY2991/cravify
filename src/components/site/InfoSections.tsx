@@ -1,6 +1,10 @@
+"use client";
+
 import { Clock, Flame, Leaf, MapPin, Timer } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import type { SiteSettings } from "@/lib/types";
+import { reveal } from "./reveal";
 
 const REASONS = [
   { icon: Flame, title: "Made to order", text: "Nothing waits under a heat lamp. Every burger is smashed, every pizza stretched, when you order it." },
@@ -9,6 +13,7 @@ const REASONS = [
 ];
 
 export function About() {
+  const still = useReducedMotion() ?? false;
   return (
     <section id="about" aria-labelledby="about-title" className="scroll-mt-[92px] bg-ink py-24 text-cream">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
@@ -17,12 +22,12 @@ export function About() {
           Food you think about all day
         </h2>
         <ul className="mt-14 grid gap-6 md:grid-cols-3">
-          {REASONS.map(({ icon: Icon, title, text }) => (
-            <li key={title} className="rounded-3xl bg-white/5 p-7 ring-1 ring-white/10">
+          {REASONS.map(({ icon: Icon, title, text }, i) => (
+            <motion.li key={title} className="rounded-3xl bg-white/5 p-7 ring-1 ring-white/10" {...reveal(i, still)}>
               <Icon className="size-8 text-[#F5B700]" aria-hidden />
               <h3 className="mt-5 text-xl font-bold">{title}</h3>
               <p className="mt-2 text-cream/70">{text}</p>
-            </li>
+            </motion.li>
           ))}
         </ul>
       </div>
@@ -31,6 +36,7 @@ export function About() {
 }
 
 export function Contact({ settings }: { settings: SiteSettings }) {
+  const still = useReducedMotion() ?? false;
   return (
     <section id="contact" aria-labelledby="contact-title" className="scroll-mt-[92px] bg-[#F5B700] py-24 text-ink">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 md:grid-cols-2 md:px-8">
@@ -60,7 +66,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
             ORDER NOW
           </a>
         </div>
-        <div className="self-end rounded-3xl bg-white/60 p-8 ring-1 ring-black/5">
+        <motion.div className="self-end rounded-3xl bg-white/60 p-8 ring-1 ring-black/5" {...reveal(1, still)}>
           <h3 className="font-display text-3xl uppercase">About this project</h3>
           <p className="mt-3 text-ink/80">
             Cravify is a concept brand and a full-stack demo by{" "}
@@ -76,7 +82,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
             and nobody will contact you.
           </p>
           <p className="mt-3 text-sm text-ink/70">The hours, location and prices on this site are samples.</p>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

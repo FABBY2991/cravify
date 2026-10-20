@@ -46,8 +46,14 @@ body {
   user-select: none;
 }
 
+/* A tight shadow that defines the food's edge; the soft spread comes from the
+   separate ground shadow below it, so the photo itself never looks hazy. */
 .food-shadow {
-  filter: drop-shadow(0 4cqh 5cqh rgb(0 0 0 / 0.28));
+  filter: drop-shadow(0 0.5cqh 0.8cqh rgb(0 0 0 / 0.22));
+}
+
+.food-ground {
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.32), rgb(0 0 0 / 0.12) 60%, transparent);
 }
 
 .shimmer {
@@ -92,8 +98,8 @@ body {
    into the slide's. */
 .video-slot {
   aspect-ratio: 9 / 16;
-  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
-  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 74%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 74%, transparent 100%);
 }
 
 @container (orientation: portrait) {

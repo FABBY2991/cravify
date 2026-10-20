@@ -9,14 +9,22 @@ import { api } from "../../../convex/_generated/api";
 import { DELIVERY_AREAS, MAX_LINE_QUANTITY, NAME_MAX, NOTE_MAX } from "../../../convex/lib/limits";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { type PricedCartLine, priceCart } from "@/lib/cart";
-import { inkOn } from "@/lib/color";
+import { headlineTone, inkOn } from "@/lib/color";
 import { messageOf } from "@/lib/errors";
 import { kes } from "@/lib/format";
 import { rememberOrder, visitorId } from "@/lib/storage";
 import type { Storefront } from "@/lib/types";
+import { useImageTint } from "@/lib/useImageTint";
 import { useCart } from "./CartProvider";
 
 type Fulfilment = "pickup" | "delivery";
+
+/** The drawer glides in and decelerates; it leaves with an equally soft ease. */
+const OPEN = { type: "tween", duration: 0.6, ease: [0.16, 1, 0.3, 1] } as const;
+const CLOSE = { type: "tween", duration: 0.45, ease: [0.65, 0, 0.35, 1] } as const;
+/** The cart's contents settle in just after the panel, one after another. */
+const CONTENT_DELAY = 0.2;
+const STEP = 0.05;
 
 export function CartDrawer({ data }: { data: Storefront }) {
   const { open } = useCart();
@@ -65,8 +73,8 @@ function DrawerPanel({
       <motion.div
         className="absolute inset-0 bg-ink/50 backdrop-blur-[2px]"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }}
+        exit={{ opacity: 0, transition: { duration: 0.45, ease: "easeInOut" } }}
         onClick={() => setOpen(false)}
       />
       <motion.div
@@ -77,9 +85,8 @@ function DrawerPanel({
         aria-label={step === "cart" ? "Your cart" : "Checkout"}
         className="absolute inset-y-0 right-0 flex w-full max-w-[440px] flex-col bg-paper shadow-2xl outline-none"
         initial={reduced ? { opacity: 0 } : { x: "100%" }}
-        animate={reduced ? { opacity: 1 } : { x: 0 }}
-        exit={reduced ? { opacity: 0 } : { x: "100%" }}
-        transition={{ type: "tween", duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        animate={reduced ? { opacity: 1, transition: { duration: 0.2 } } : { x: 0, transition: OPEN }}
+        exit={reduced ? { opacity: 0, transition: { duration: 0.2 } } : { x: "100%", transition: CLOSE }}
       >
         <div className="flex items-center gap-2 border-b border-line px-5 py-4">
           {step === "checkout" && (
@@ -177,14 +184,23 @@ function CartView({
   deliveryFee: number;
   onCheckout: () => void;
 }) {
+  const reduced = useReducedMotion() ?? false;
+  const last = Math.min(priced.lines.length, 6);
   return (
     <>
-      <ul className="flex-1 divide-y divide-line overflow-y-auto px-5">
-        {priced.lines.map((line) => (
-          <CartLineRow key={`${line.menuItemId}:${line.sizeKey}`} line={line} />
-        ))}
-      </ul>
-      <div className="space-y-4 border-t border-line bg-white px-5 py-5">
+      <motion.ul layoutScroll className="flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
+        <AnimatePresence>
+          {priced.lines.map((line, i) => (
+            <CartLineRow key={`${line.menuItemId}:${line.sizeKey}`} line={line} index={i} still={reduced} />
+          ))}
+        </AnimatePresence>
+      </motion.ul>
+      <motion.div
+        className="space-y-4 border-t border-line bg-white px-5 py-5"
+        initial={reduced ? false : { opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: reduced ? 0 : CONTENT_DELAY + last * STEP, ease: [0.22, 1, 0.36, 1] }}
+      >
         <FulfilmentToggle value={fulfilment} onChange={setFulfilment} />
         <Totals priced={priced} fulfilment={fulfilment} deliveryFee={deliveryFee} />
         {priced.blocked && (
@@ -200,17 +216,35 @@ function CartView({
         >
           Checkout · {kes(priced.total)}
         </button>
-      </div>
+      </motion.div>
     </>
   );
 }
 
-function CartLineRow({ line }: { line: PricedCartLine }) {
+function CartLineRow({ line, index, still }: { line: PricedCartLine; index: number; still: boolean }) {
   const { dispatch } = useCart();
   const set = (quantity: number) =>
     dispatch({ type: "setQuantity", menuItemId: line.menuItemId, sizeKey: line.sizeKey, quantity });
+  // A wash of the food's own colour, light enough that the ink text keeps full
+  // contrast. Until the photo is read (or with no photo) it's the category's
+  // tone — an ember on near-black, as on the hero, rather than a dull grey.
+  const tint = useImageTint(line.imageUrl) ?? headlineTone(line.categoryColor);
   return (
-    <li className="flex gap-3 py-4">
+    <motion.li
+      layout={!still}
+      className="flex gap-3 rounded-2xl p-3 ring-1 ring-black/5 transition-[background-color] duration-700"
+      style={{ background: `color-mix(in oklab, ${tint} 14%, var(--color-paper))` }}
+      initial={still ? false : { opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={still ? { opacity: 0 } : { opacity: 0, x: 40, transition: { duration: 0.25, ease: "easeIn" } }}
+      transition={{
+        duration: 0.4,
+        delay: still ? 0 : CONTENT_DELAY + Math.min(index, 6) * STEP,
+        ease: [0.22, 1, 0.36, 1],
+        // Closing the gap after a removal starts at once, not after the opening stagger.
+        layout: { type: "spring", stiffness: 320, damping: 32 },
+      }}
+    >
       <div
         className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl"
         style={{ background: line.categoryColor, color: inkOn(line.categoryColor) }}
@@ -237,7 +271,7 @@ function CartLineRow({ line }: { line: PricedCartLine }) {
         )}
         <div className="mt-2 flex items-center gap-2">
           {!line.problem && (
-            <div className="inline-flex items-center rounded-full ring-1 ring-line">
+            <div className="inline-flex items-center rounded-full bg-white/70 ring-1 ring-black/10">
               <button
                 type="button"
                 onClick={() => set(line.quantity - 1)}
@@ -270,7 +304,7 @@ function CartLineRow({ line }: { line: PricedCartLine }) {
           </button>
         </div>
       </div>
-    </li>
+    </motion.li>
   );
 }
 

@@ -55,6 +55,15 @@ this way; swap in true cut-outs whenever they're ready.
 node scripts/shape-hero.mjs images-incoming/pizza/pepperoni.jpg images-incoming/heroes/pizza.png ellipse 8,196,720,720
 ```
 
+**Why a hero can look soft.** The page draws heroes sharp (a tight shadow,
+whole-pixel movement). What softness remains is in the files: shaped heroes
+have a feathered rim (`shape-hero.mjs` blurs the edge by 1.2% of the shorter
+side), and the current source photos are about 736 px wide, so they are
+enlarged on large and retina screens. The burger clip has an opaque dark
+background, which shows as a dark column behind the burger. The cure is
+better files: true cut-outs from photos at least 1400 px wide, and a clip with
+a transparent background.
+
 ## Sources
 
 The current photos come from Pinterest and the burger clip is by

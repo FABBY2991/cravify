@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: var(--font-anton), "Arial Narrow", Impact, sans-serif;
+  --font-logo: var(--font-lilita), system-ui, sans-serif;
+  --font-sans: var(--font-dm), system-ui, -apple-system, sans-serif;
+
+  --color-ink: #1d1209;
+  --color-cream: #fff6ec;
+  --color-paper: #fffbf6;
+  --color-brand: #e23d28;
+  --color-brand-dark: #b72a18;
+  --color-muted: #6b5b4f;
+  --color-line: #ecdccb;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* A slide is a size container, so its art scales the same in the full-screen
+   hero and in the admin's small preview. */
+.slide-stage {
+  container-type: size;
+}
+
+.headline-text {
+  font-family: var(--font-display);
+  line-height: 0.82;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.food-shadow {
+  filter: drop-shadow(0 4cqh 5cqh rgb(0 0 0 / 0.28));
+}
+
+.shimmer {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.05));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}
+
+/* The food: centred over the headline, as large as the stage allows. */
+.food-slot {
+  left: 50%;
+  top: 55%;
+  width: 62cqw;
+  height: 66cqh;
+  margin-left: -31cqw;
+  margin-top: -33cqh;
+}
+
+@container (orientation: portrait) {
+  .food-slot {
+    top: 50%;
+    width: 76cqw;
+    height: 44cqh;
+    margin-left: -38cqw;
+    margin-top: -22cqh;
+  }
+}
+
+/* A hero clip: full stage height, edges faded so its own background melts
+   into the slide's. */
+.video-slot {
+  aspect-ratio: 9 / 16;
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+}
+
+@container (orientation: portrait) {
+  .video-slot {
+    top: 12cqh;
+    bottom: auto;
+    height: 76cqh;
+  }
+}
+
+/* Credit line for borrowed media: bottom-right on wide stages, under the
+   line above the headline on tall ones (the product card owns the bottom). */
+.slide-credit {
+  right: 2.5cqw;
+  bottom: 3.2cqh;
+  font-size: max(10px, 1.1cqmin);
+}
+
+@container (orientation: portrait) {
+  .slide-credit {
+    right: 0;
+    left: 0;
+    bottom: auto;
+    top: 19cqh;
+    text-align: center;
+  }
+}
+
+.float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6%) rotate(3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float {
+    animation: none;
+  }
+}

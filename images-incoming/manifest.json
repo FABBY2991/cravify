@@ -1,0 +1,22 @@
+{
+  "items": [
+    { "category": "burgers", "item": "Triple Bacon Stack", "file": "burgers/triple-bacon-stack.jpg" },
+    { "category": "pizza", "item": "Pepperoni", "file": "pizza/pepperoni.jpg" },
+    { "category": "fried-chicken", "item": "Drumstick Platter", "file": "chicken/drumstick-platter.jpg" },
+    { "category": "shakes-drinks", "item": "Berries & Cream Freakshake", "file": "shakes/strawberry-shake.jpg" },
+    { "category": "shakes-drinks", "item": "Blueberry Shake", "file": "shakes/blueberry-shake.jpg" },
+    { "category": "shakes-drinks", "item": "Mango Chia Smoothie", "file": "shakes/mango-shake.jpg" },
+    { "category": "shakes-drinks", "item": "Blackberry Mint Fizz", "file": "shakes/blackberry-mint-fizz.jpg" },
+    { "category": "shakes-drinks", "item": "Blue Lagoon Lemonade", "file": "shakes/blue-lagoon-lemonade.jpg" },
+    { "category": "desserts", "item": "Triple Scoop Sundae", "file": "desserts/triple-scoop-sundae.jpg" },
+    { "category": "desserts", "item": "Berry Granola Parfait", "file": "desserts/berry-granola-parfait.jpg" },
+    { "category": "desserts", "item": "Orange Sherbet", "file": "desserts/orange-sherbet.jpg" }
+  ],
+  "slides": [
+    { "category": "burgers", "image": "heroes/burgers-still.jpg", "video": "burgers/burger-animation.mp4" },
+    { "category": "pizza", "image": "heroes/pizza.png" },
+    { "category": "fried-chicken", "image": "heroes/chicken.png" },
+    { "category": "shakes-drinks", "image": "heroes/shakes.png" },
+    { "category": "desserts", "image": "heroes/desserts.png" }
+  ]
+}

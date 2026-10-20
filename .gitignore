@@ -1,0 +1,28 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env files (secrets never committed)
+.env*
+!.env.example
+
+# testing
+/test-results/
+/playwright-report/
+/e2e/.auth/
+
+# images you drop in for import (large originals stay local)
+/images-incoming/**/*
+!/images-incoming/**/
+!/images-incoming/README.md
+!/images-incoming/manifest.json
+/images-processed/
+
+# misc
+.DS_Store
+.vercel

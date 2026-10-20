@@ -16,3 +16,4 @@ npx tsc --noEmit
 npx eslint src convex e2e scripts
 npx convex deploy -y
 vercel deploy --prod --yes
+echo "Live at https://cravify-rho.vercel.app"

@@ -4,8 +4,8 @@
 
 | Piece | Dev | Production |
 | --- | --- | --- |
-| Convex | `dapper-pika-804` (team `capitalfabian`, project `cravify`) | the project's prod deployment (see `npx convex dashboard --prod`) |
-| Web | `localhost` | Vercel project `cravify` |
+| Convex | `dapper-pika-804` (team `capitalfabian`, project `cravify`) | `savory-jay-22` |
+| Web | `localhost` | Vercel project `cravify` → https://cravify-rho.vercel.app |
 | Code | — | private GitHub repo `FABBY2991/cravify` |
 
 ## Shipping a change
@@ -26,13 +26,13 @@ from the wrong directory pushes the wrong functions to a production.
 ```bash
 npx convex deploy -y                                   # creates the prod deployment
 node scripts/auth-keys.mjs --prod
-npx convex env set --prod SITE_URL https://<the vercel url>
+npx convex env set --prod SITE_URL https://cravify-rho.vercel.app
 npx convex env set --prod ADMIN_EMAILS "capitalfabian@gmail.com"
 npx convex env set --prod RESEND_FROM "Cravify <no-reply@mypa.computer>"
 # RESEND_API_KEY: set by the owner — see below
 npx convex run --prod seed:init
 npm run images -- --prod
-vercel env add NEXT_PUBLIC_CONVEX_URL production       # the prod https://….convex.cloud URL
+vercel env add NEXT_PUBLIC_CONVEX_URL production       # https://savory-jay-22.convex.cloud
 vercel deploy --prod --yes
 ```
 
@@ -57,7 +57,8 @@ on this deployment yet" — by design, never a logged code.
 - **Bad backend deploy:** check out the last good commit and `npm run deploy`.
   Convex schema changes here are additive (optional fields), so older code
   keeps reading the data.
-- **Demo data in a mess:** `/admin` → Orders → *Reset demo* (orders only).
+- **Demo data in a mess:** `/admin` → Orders → *Reset demo* (orders only), or
+  from the CLI without signing in: `npx convex run --prod demo:clearOrders`.
 - **Menu wiped or empty deployment:** `npx convex run [--prod] seed:init`
   re-creates the starting menu only when no categories exist, then
   `npm run images [-- --prod]` reloads the images.

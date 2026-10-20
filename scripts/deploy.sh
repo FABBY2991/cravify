@@ -12,6 +12,9 @@ grep -q "dapper-pika-804" .env.local || {
 }
 
 npm test
+# Route types (LayoutProps, PageProps) live in .next; generate them so the
+# check doesn't depend on an earlier build.
+npx next typegen >/dev/null
 npx tsc --noEmit
 npx eslint src convex e2e scripts
 npx convex deploy -y

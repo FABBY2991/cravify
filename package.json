@@ -10,7 +10,7 @@
     "dev:backend": "convex dev",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "images": "node scripts/import-images.mjs",
     "deploy": "./scripts/deploy.sh"
   },

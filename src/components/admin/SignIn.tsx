@@ -77,6 +77,7 @@ export function SignIn() {
             <form onSubmit={verify} className="mt-6 space-y-3" noValidate>
               <p className="text-sm text-muted">
                 We sent a 6-digit code to <strong className="text-ink">{email.trim()}</strong>. It expires in 15 minutes.
+                Only the newest code works — each new email cancels the one before.
               </p>
               <label htmlFor="admin-code" className="text-sm font-semibold">
                 Code

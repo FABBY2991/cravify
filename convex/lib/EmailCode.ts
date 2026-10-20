@@ -25,14 +25,16 @@ export const EmailCode = Email({
     if (!isAdminEmail(email)) throw new ConvexError("That email isn't on Cravify's admin list.");
     const sent = await sendEmail({
       to: email,
-      subject: "Your Cravify admin code",
-      text: `Your code to open the Cravify admin is ${token}. It expires in 15 minutes.\n\nIf you didn't ask for it, you can ignore this email.`,
+      // The code in the subject keeps the newest one obvious when mail apps
+      // thread several sign-in emails together.
+      subject: `${token} is your Cravify admin code`,
+      text: `Your code to open the Cravify admin is ${token}. It expires in 15 minutes, and asking for another code cancels this one.\n\nIf you didn't ask for it, you can ignore this email.`,
       html:
         `<div style="font-family:Helvetica,Arial,sans-serif;max-width:460px;margin:0 auto;color:#1d1209">` +
         `<p style="font-size:22px;font-weight:800;color:#e23d28;margin:0 0 12px">Cravify</p>` +
         `<p>Your code to open the admin:</p>` +
         `<p style="font-size:34px;letter-spacing:6px;margin:14px 0;font-weight:700">${token}</p>` +
-        `<p style="color:#6b5b4f">It expires in 15 minutes. If you didn't ask for it, you can ignore this email.</p>` +
+        `<p style="color:#6b5b4f">It expires in 15 minutes, and asking for another code cancels this one. If you didn't ask for it, you can ignore this email.</p>` +
         `</div>`,
     });
     if (!sent) {

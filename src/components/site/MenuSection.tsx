@@ -12,11 +12,11 @@ import { reveal } from "./reveal";
 
 /** A focused card's move: slow and settled, no bounce. */
 const LAZY = { type: "spring", stiffness: 110, damping: 20, mass: 1 } as const;
-const FOCUS_SCALE = 1.14;
+const FOCUS_SCALE = 1.22;
 /** How far a focused card travels toward the middle of the screen: a lean, not a jump. */
 const PULL = 0.6;
-/** Hover intent: a pointer passing over a card on its way elsewhere doesn't lift it. */
-const ENTER_MS = 120;
+/** A card pops once the pointer has rested on it this long; it lets go almost at once. */
+const ENTER_MS = 2000;
 const LEAVE_MS = 100;
 /** Cards sliding under a still pointer while the page scrolls aren't a choice: wait for the scroll to stop. */
 const SCROLL_IDLE_MS = 220;
@@ -29,6 +29,7 @@ export function MenuSection({ categories }: { categories: MenuCategory[] }) {
   const reduced = useReducedMotion() ?? false;
   const [focus, setFocus] = useState<Focus>(null);
   const intent = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const release = useRef<ReturnType<typeof setTimeout>>(undefined);
   const tabs = useRef<HTMLDivElement>(null);
 
   // Highlight the tab of whichever category is in view.
@@ -47,30 +48,36 @@ export function MenuSection({ categories }: { categories: MenuCategory[] }) {
     return () => observer.disconnect();
   }, [categories]);
 
-  // The card under the pointer right now; after a short pause, that's the focus.
-  // Committing the latest state (not each event) means a pointer that crosses
-  // other cards on its way out still lets the focused one go.
+  // The card under the pointer right now. A popped card the pointer has left
+  // lets go almost at once; the card it's now resting on pops after ENTER_MS.
+  // Both read the latest state (not each event), so a pointer that crosses
+  // other cards on its way out still lets the popped one go.
   const hovered = useRef<string | null>(null);
   const scrolledAt = useRef(0);
   const hover = useCallback((id: string, on: boolean) => {
     if (on) hovered.current = id;
     else if (hovered.current === id) hovered.current = null;
     clearTimeout(intent.current);
-    const commit = () => {
+    clearTimeout(release.current);
+    release.current = setTimeout(
+      () => setFocus((f) => (f && !f.touch && f.id !== hovered.current ? null : f)),
+      LEAVE_MS,
+    );
+    const pop = () => {
       const target = hovered.current;
+      if (target === null) return;
       const sinceScroll = performance.now() - scrolledAt.current;
-      if (target !== null && sinceScroll < SCROLL_IDLE_MS) {
-        intent.current = setTimeout(commit, SCROLL_IDLE_MS - sinceScroll);
+      if (sinceScroll < SCROLL_IDLE_MS) {
+        intent.current = setTimeout(pop, SCROLL_IDLE_MS - sinceScroll);
         return;
       }
-      setFocus((f) =>
-        f?.touch ? f : target === null ? null : f?.id === target ? f : { id: target, touch: false, scrollY: window.scrollY },
-      );
+      setFocus((f) => (f?.touch || f?.id === target ? f : { id: target, touch: false, scrollY: window.scrollY }));
     };
-    intent.current = setTimeout(commit, hovered.current ? ENTER_MS : LEAVE_MS);
+    if (hovered.current) intent.current = setTimeout(pop, ENTER_MS);
   }, []);
   const tap = useCallback((id: string) => {
     clearTimeout(intent.current);
+    clearTimeout(release.current);
     setFocus((f) => (f?.id === id ? null : { id, touch: true, scrollY: window.scrollY }));
   }, []);
   // A focused card may not cover the header or the category tabs.
@@ -84,6 +91,7 @@ export function MenuSection({ categories }: { categories: MenuCategory[] }) {
     return () => {
       window.removeEventListener("scroll", onScroll);
       clearTimeout(intent.current);
+      clearTimeout(release.current);
     };
   }, []);
 

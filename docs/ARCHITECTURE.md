@@ -42,7 +42,10 @@ the static layout (no entrances, no focus move, no autoplay until they press pla
   on a restrained spring with a separate ground shadow; the outgoing slide
   animates out from its resting state. Parallax moves in whole pixels so the
   photo is never resampled. The slide indicator starts filling only once the
-  food has landed (`SETTLE_MS` in `Hero.tsx`).
+  food has landed (`SETTLE_MS` in `Hero.tsx`). Clips and rectangular photos
+  are shown unframed at full height, their edges continued and blurred on a
+  tiny canvas (`SlideAmbience`); `lib/imageRead.ts` reads each hero image once
+  for its edge colour (the slide's tone) and whether it's a cut-out.
 - **Focus cards** (`MenuSection.tsx`): hovering a menu card (or tapping it on
   a touch screen) glides it part-way to the middle of the screen, a little
   larger, above a veil that blurs and dims the rest. The `<li>` stays in the
@@ -53,7 +56,7 @@ the static layout (no entrances, no focus move, no autoplay until they press pla
   a row at a time.
 - **Cart** (`CartDrawer.tsx`): slower ease-out open, softer close, rows and
   totals settle in one after another; each row is washed with the food's own
-  colour, read from its photo by `lib/useImageTint.ts` (category colour until
+  colour, read from its photo by `lib/imageRead.ts` (category colour until
   then, or if the photo can't be read).
 
 ## Data model

@@ -10,13 +10,28 @@
     { "category": "shakes-drinks", "item": "Blue Lagoon Lemonade", "file": "shakes/blue-lagoon-lemonade.jpg" },
     { "category": "desserts", "item": "Triple Scoop Sundae", "file": "desserts/triple-scoop-sundae.jpg" },
     { "category": "desserts", "item": "Berry Granola Parfait", "file": "desserts/berry-granola-parfait.jpg" },
-    { "category": "desserts", "item": "Orange Sherbet", "file": "desserts/orange-sherbet.jpg" }
+    { "category": "desserts", "item": "Orange Sherbet", "file": "desserts/orange-sherbet.jpg" },
+    { "category": "burgers", "item": "Double Smash Burger", "file": "burgers/double-smash-burger.jpg" },
+    { "category": "burgers", "item": "Classic Cheeseburger", "file": "burgers/classic-cheeseburger.jpg" },
+    { "category": "burgers", "item": "Crispy Chicken Burger", "file": "burgers/crispy-chicken-burger.jpg" },
+    { "category": "burgers", "item": "Veggie Bean Burger", "file": "burgers/veggie-bean-burger.jpg" },
+    { "category": "pizza", "item": "Margherita", "file": "pizza/margherita.jpg" },
+    { "category": "pizza", "item": "BBQ Chicken", "file": "pizza/bbq-chicken.jpg" },
+    { "category": "pizza", "item": "Hawaiian", "file": "pizza/hawaiian.jpg" },
+    { "category": "pizza", "item": "Meat Feast", "file": "pizza/meat-feast.jpg" },
+    { "category": "fried-chicken", "item": "3-Piece Meal", "file": "chicken/three-piece-meal.jpg" },
+    { "category": "fried-chicken", "item": "Hot Wings", "file": "chicken/hot-wings.jpg" },
+    { "category": "fried-chicken", "item": "Chicken Strips", "file": "chicken/chicken-strips.jpg" },
+    { "category": "fried-chicken", "item": "Seasoned Fries", "file": "chicken/seasoned-fries.jpg" },
+    { "category": "shakes-drinks", "item": "Chocolate Shake", "file": "shakes/chocolate-shake.jpg" },
+    { "category": "desserts", "item": "Chocolate Lava Cake", "file": "desserts/chocolate-lava-cake.jpg" },
+    { "category": "desserts", "item": "Cheesecake Slice", "file": "desserts/cheesecake-slice.jpg" }
   ],
   "slides": [
     { "category": "burgers", "image": "heroes/burgers-still.jpg", "video": "burgers/burger-animation.mp4" },
-    { "category": "pizza", "image": "heroes/pizza.png" },
-    { "category": "fried-chicken", "image": "heroes/chicken.png" },
-    { "category": "shakes-drinks", "image": "heroes/shakes.png" },
-    { "category": "desserts", "image": "heroes/desserts.png" }
+    { "category": "pizza", "image": "pizza/hero-still.jpg", "video": "pizza/hero-video.mp4" },
+    { "category": "fried-chicken", "image": "chicken/hero-still.jpg", "video": "chicken/hero-video.mp4" },
+    { "category": "shakes-drinks", "image": "shakes/hero-still.jpg", "video": "shakes/hero-video.mp4" },
+    { "category": "desserts", "image": "desserts/pistachio-hero.jpg" }
   ]
 }

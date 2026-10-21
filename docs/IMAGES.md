@@ -12,15 +12,23 @@ Images: PNG, WebP, JPEG or AVIF, up to 5 MB. Clips: MP4 or WebM, up to 20 MB.
 
 ## What makes a good hero
 
-The effect — food in front of the oversized headline — needs a **cut-out**: a
-PNG or WebP with a transparent background, trimmed close to the food. Floating
-pieces (a strawberry, a basil leaf) are the same, just small.
+A slide shows its food one of three ways, chosen from what you upload:
 
-A **clip** plays instead of the cut-out and the cut-out becomes its still
-frame for visitors who turn animations off. A clip on a dark background works
-best on a slide whose colour matches it (the burger slide is near-black for
-this reason); its edges are faded into the slide automatically. Credit the
-creator in the slide's *Credit* field.
+- **Clip** (MP4/WebM, ideally portrait 9:16): plays full height, as it is —
+  no frame. On wide screens its left and right edges carry on, blurred, to
+  the sides of the slide, and the slide, nav and controls take their colour
+  from the clip's edges. On phones it fills the screen and the headline sits
+  in front of it. The hero image becomes its still (shown before it loads and
+  to visitors who turn animations off) and is where the colour is read from.
+- **Photo** (an ordinary rectangular picture, no clip): shown exactly like a
+  clip, standing still.
+- **Cut-out** (PNG or WebP with a transparent background, trimmed close to
+  the food): floats in front of the oversized headline with a ground shadow,
+  on the slide's own colour. Floating pieces (a strawberry, a basil leaf) are
+  the same, just small, and only show with a cut-out.
+
+The page tells a cut-out from a photo by its transparent corners. Credit the
+creator of borrowed media in the slide's *Credit* field.
 
 ## Bulk import from images-incoming/
 

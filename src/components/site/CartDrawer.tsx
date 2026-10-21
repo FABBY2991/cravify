@@ -14,7 +14,7 @@ import { messageOf } from "@/lib/errors";
 import { kes } from "@/lib/format";
 import { rememberOrder, visitorId } from "@/lib/storage";
 import type { Storefront } from "@/lib/types";
-import { useImageTint } from "@/lib/useImageTint";
+import { useImageRead } from "@/lib/imageRead";
 import { useCart } from "./CartProvider";
 
 type Fulfilment = "pickup" | "delivery";
@@ -228,7 +228,7 @@ function CartLineRow({ line, index, still }: { line: PricedCartLine; index: numb
   // A wash of the food's own colour, light enough that the ink text keeps full
   // contrast. Until the photo is read (or with no photo) it's the category's
   // tone — an ember on near-black, as on the hero, rather than a dull grey.
-  const tint = useImageTint(line.imageUrl) ?? headlineTone(line.categoryColor);
+  const tint = useImageRead(line.imageUrl)?.vivid ?? headlineTone(line.categoryColor);
   return (
     <motion.li
       layout={!still}

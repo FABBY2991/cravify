@@ -6,6 +6,7 @@ import { type PointerEvent, useCallback, useEffect, useRef, useState } from "rea
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { inkOn } from "@/lib/color";
 import { fromPrice, kes } from "@/lib/format";
+import { useImageReads } from "@/lib/imageRead";
 import type { Slide } from "@/lib/types";
 import { AddButton, SizePicker } from "./AddToCart";
 import { type Phase, SlideArt } from "./SlideArt";
@@ -32,6 +33,16 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
   const wantsPlay = choice ? choice === "play" : !reduced;
   const paused = hovered || focused || !wantsPlay;
 
+  // A clip or photo slide takes its colour from the media's own edges, so the
+  // slide (and the nav and controls on it) continue the footage, not frame it.
+  const reads = useImageReads(slides.map((s) => s.heroImageUrl));
+  const tone = (s: Slide) => {
+    const read = s.heroImageUrl ? reads[s.heroImageUrl] : null;
+    return read && (s.heroVideoUrl || !read.cutout) ? read.edge : s.color;
+  };
+  const shown = (s: Slide) => ({ ...s, color: tone(s) });
+  const color = slide ? tone(slide) : undefined;
+
   const progress = useMotionValue(0);
   const mx = useSpring(0, { stiffness: 60, damping: 18 });
   const my = useSpring(0, { stiffness: 60, damping: 18 });
@@ -49,8 +60,8 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
   const prev = useCallback(() => go((index - 1 + count) % count, -1), [go, index, count]);
 
   useEffect(() => {
-    if (slide) onColor(slide.color);
-  }, [slide, onColor]);
+    if (color) onColor(color);
+  }, [color, onColor]);
 
   // Preload every slide's pictures and clips so a wipe never reveals an empty stage.
   useEffect(() => {
@@ -116,7 +127,7 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
 
   if (!slide) return <HeroEmpty />;
 
-  const ink = inkOn(slide.color);
+  const ink = inkOn(tone(slide));
   const phase: Phase = reduced ? "still" : show.turn === 0 ? "first" : "enter";
 
   return (
@@ -125,7 +136,7 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
       aria-roledescription="carousel"
       aria-label="Cravify favourites"
       className="relative h-svh min-h-[560px] w-full touch-pan-y overflow-hidden select-none"
-      style={{ background: (leaving ?? slide).color }}
+      style={{ background: tone(leaving ?? slide) }}
       onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
       onPointerLeave={() => {
         setHovered(false);
@@ -150,7 +161,7 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
     >
       {leaving && !reduced && (
         <div key={`leave-${show.turn}`} className="absolute inset-0">
-          <SlideArt slide={leaving} phase="leave" direction={show.direction} />
+          <SlideArt slide={shown(leaving)} phase="leave" direction={show.direction} />
         </div>
       )}
 
@@ -171,7 +182,7 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
         transition={{ duration: reduced ? 0.35 : WIPE_S, ease: [0.77, 0, 0.18, 1] }}
         onAnimationComplete={() => setShow((s) => (s.previous === null ? s : { ...s, previous: null }))}
       >
-        <SlideArt slide={slide} phase={phase} direction={show.direction} mx={mx} my={my} priority={index === 0} />
+        <SlideArt slide={shown(slide)} phase={phase} direction={show.direction} mx={mx} my={my} priority={index === 0} />
       </motion.div>
 
       {/* A visible heading for the slide, for people and search engines alike. */}
@@ -197,7 +208,7 @@ export function Hero({ slides, onColor }: { slides: Slide[]; onColor: (color: st
               // After the food has landed, so the card never competes with the entrance.
               transition={{ duration: 0.5, delay: reduced ? 0 : show.turn === 0 ? 0.95 : 1.1, ease: [0.22, 1, 0.36, 1] }}
             >
-              <FeaturedCard slide={slide} />
+              <FeaturedCard slide={shown(slide)} />
             </motion.div>
           )}
         </AnimatePresence>

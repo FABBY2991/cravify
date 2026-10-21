@@ -39,6 +39,7 @@ body {
 }
 
 .headline-text {
+  color: var(--headline);
   font-family: var(--font-display);
   line-height: 0.82;
   letter-spacing: -0.01em;
@@ -94,19 +95,28 @@ body {
   }
 }
 
-/* A hero clip: full stage height, edges faded so its own background melts
-   into the slide's. */
-.video-slot {
-  aspect-ratio: 9 / 16;
-  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 74%, transparent 100%);
-  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 74%, transparent 100%);
+/* A hero clip or photo as it is: full stage height at its own shape, centred.
+   Only its left and right edges soften, into the blurred continuation of
+   those same edges behind it (.slide-ambience) — so it never looks framed.
+   Where the stage is narrower than the media (phones) it fills the stage. */
+.media-slot {
+  aspect-ratio: var(--media-aspect, 9 / 16);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
 }
 
+.slide-ambience {
+  filter: blur(22px) saturate(1.05);
+  transform: scale(1.1);
+}
+
+/* On a tall screen the media covers the headline's line, so the headline
+   comes in front of it: near-white, lifted off the food by a soft shadow. */
 @container (orientation: portrait) {
-  .video-slot {
-    top: 12cqh;
-    bottom: auto;
-    height: 76cqh;
+  .slide-stage[data-natural] .headline-text {
+    z-index: 1;
+    color: rgb(255 255 255 / 0.92);
+    text-shadow: 0 0.4cqh 2.4cqh rgb(0 0 0 / 0.45);
   }
 }
 

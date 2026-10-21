@@ -62,6 +62,11 @@ on this deployment yet" — by design, never a logged code.
 - **Menu wiped or empty deployment:** `npx convex run [--prod] seed:init`
   re-creates the starting menu only when no categories exist, then
   `npm run images [-- --prod]` reloads the images.
+- **Starting menu grew (new items or slides in `convex/seed.ts`):**
+  `npx convex run [--prod] seed:addMissing` adds the ones a deployment
+  doesn't have yet (by item name and slide headline) and changes nothing
+  else — though an item an admin deleted on purpose would come back. Then
+  `npm run images [-- --prod]`.
 - **Locked out of the admin:** check `ADMIN_EMAILS` and `RESEND_*` with
   `npx convex env list [--prod]` (names only) and the sign-in errors in
   `npx convex logs [--prod]`.

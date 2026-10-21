@@ -25,13 +25,16 @@
     { "category": "fried-chicken", "item": "Seasoned Fries", "file": "chicken/seasoned-fries.jpg" },
     { "category": "shakes-drinks", "item": "Chocolate Shake", "file": "shakes/chocolate-shake.jpg" },
     { "category": "desserts", "item": "Chocolate Lava Cake", "file": "desserts/chocolate-lava-cake.jpg" },
-    { "category": "desserts", "item": "Cheesecake Slice", "file": "desserts/cheesecake-slice.jpg" }
+    { "category": "desserts", "item": "Cheesecake Slice", "file": "desserts/cheesecake-slice.jpg" },
+    { "category": "shakes-drinks", "item": "Cappuccino", "file": "shakes/cappuccino.jpg" },
+    { "category": "shakes-drinks", "item": "Double Espresso", "file": "shakes/double-espresso.jpg" }
   ],
   "slides": [
     { "category": "burgers", "image": "heroes/burgers-still.jpg", "video": "burgers/burger-animation.mp4" },
     { "category": "pizza", "image": "pizza/hero-still.jpg", "video": "pizza/hero-video.mp4" },
     { "category": "fried-chicken", "image": "chicken/hero-still.jpg", "video": "chicken/hero-video.mp4" },
     { "category": "shakes-drinks", "image": "shakes/hero-still.jpg", "video": "shakes/hero-video.mp4" },
+    { "category": "shakes-drinks", "headline": "BREWTIFUL", "image": "shakes/coffee-still.jpg", "video": "shakes/coffee-video.mp4" },
     { "category": "desserts", "image": "desserts/pistachio-hero.jpg" }
   ]
 }

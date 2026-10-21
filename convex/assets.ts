@@ -14,17 +14,21 @@ export const uploadUrl = internalMutation({
   handler: async (ctx) => await ctx.storage.generateUploadUrl(),
 });
 
-async function slideFor(ctx: MutationCtx, categorySlug: string) {
+/** A category's slide: the one with this headline, or else its first. */
+async function slideFor(ctx: MutationCtx, categorySlug: string, headline?: string) {
   const category = await ctx.db
     .query("categories")
     .withIndex("by_slug", (q) => q.eq("slug", categorySlug))
     .unique();
   if (category === null) throw new ConvexError(`No category with slug ${categorySlug}`);
-  const slide = await ctx.db
+  const slides = await ctx.db
     .query("heroSlides")
     .withIndex("by_categoryId", (q) => q.eq("categoryId", category._id))
-    .first();
-  if (slide === null) throw new ConvexError(`${category.name} has no hero slide`);
+    .take(20);
+  const slide = headline === undefined ? slides[0] : slides.find((s) => s.headline === headline);
+  if (slide === undefined) {
+    throw new ConvexError(`${category.name} has no hero slide${headline === undefined ? "" : ` called ${headline}`}`);
+  }
   return { category, slide };
 }
 
@@ -34,15 +38,15 @@ export const attach = internalMutation({
     storageId: v.id("_storage"),
     target: v.union(
       v.object({ kind: v.literal("item"), categorySlug: v.string(), itemName: v.string() }),
-      v.object({ kind: v.literal("heroImage"), categorySlug: v.string() }),
-      v.object({ kind: v.literal("heroVideo"), categorySlug: v.string() }),
-      v.object({ kind: v.literal("piece"), categorySlug: v.string() }),
+      v.object({ kind: v.literal("heroImage"), categorySlug: v.string(), headline: v.optional(v.string()) }),
+      v.object({ kind: v.literal("heroVideo"), categorySlug: v.string(), headline: v.optional(v.string()) }),
+      v.object({ kind: v.literal("piece"), categorySlug: v.string(), headline: v.optional(v.string()) }),
     ),
   },
   handler: async (ctx, { storageId, target }) => {
     const refused = await refuseFile(ctx, storageId, target.kind === "heroVideo" ? "video" : "image");
     if (refused) return refused;
-    const { category, slide } = await slideFor(ctx, target.categorySlug);
+    const { category, slide } = await slideFor(ctx, target.categorySlug, "headline" in target ? target.headline : undefined);
 
     switch (target.kind) {
       case "item": {
@@ -77,9 +81,9 @@ export const attach = internalMutation({
 
 /** Clears a slide's floating pieces (deleting their files) before a re-import. */
 export const clearPieces = internalMutation({
-  args: { categorySlug: v.string() },
-  handler: async (ctx, { categorySlug }) => {
-    const { slide } = await slideFor(ctx, categorySlug);
+  args: { categorySlug: v.string(), headline: v.optional(v.string()) },
+  handler: async (ctx, { categorySlug, headline }) => {
+    const { slide } = await slideFor(ctx, categorySlug, headline);
     for (const id of slide.pieceImageIds) await dropFile(ctx, id);
     await ctx.db.patch("heroSlides", slide._id, { pieceImageIds: [] });
     return slide.pieceImageIds.length;

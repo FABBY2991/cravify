@@ -1,9 +1,12 @@
-import { internalMutation } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import { internalMutation, type MutationCtx } from "./_generated/server";
 import { seedSampleOrders } from "./demo";
 import { DEFAULT_SETTINGS } from "./lib/settings";
 import { slugify } from "./lib/text";
 
 type SeedItem = { name: string; description: string; sizes: [label: string, price: number][] };
+/** A further slide for a category, featuring one of its items (by name). */
+type ExtraSlide = { headline: string; kicker: string; featured: string };
 
 /** The starting menu. Sample prices in KES — editable in the admin. */
 const MENU: {
@@ -14,6 +17,7 @@ const MENU: {
   kicker: string;
   credit?: string;
   items: SeedItem[];
+  extraSlides?: ExtraSlide[];
 }[] = [
   {
     name: "Burgers",
@@ -72,7 +76,10 @@ const MENU: {
       { name: "Chocolate Shake", description: "Rich chocolate ice cream with a fudge swirl.", sizes: [["Small", 450], ["Large", 650]] },
       { name: "Blackberry Mint Fizz", description: "Blackberries, lime and mint over ice with sparkling soda. Alcohol-free.", sizes: [["Regular", 350]] },
       { name: "Blue Lagoon Lemonade", description: "Sparkling blue lemonade with lemon slices and blueberries. Alcohol-free.", sizes: [["Regular", 350]] },
+      { name: "Cappuccino", description: "A double shot under silky steamed milk, poured with latte art and a dusting of cocoa.", sizes: [["Regular", 350], ["Large", 450]] },
+      { name: "Double Espresso", description: "A rich, short double shot with a golden crema.", sizes: [["Regular", 250]] },
     ],
+    extraSlides: [{ headline: "BREWTIFUL", kicker: "Cappuccino, poured to order", featured: "Cappuccino" }],
   },
   {
     name: "Desserts",
@@ -100,6 +107,7 @@ export const init = internalMutation({
   handler: async (ctx) => {
     if ((await ctx.db.query("categories").first()) !== null) return "Already seeded — nothing changed.";
 
+    let slidePosition = 0;
     for (const [i, category] of MENU.entries()) {
       const categoryId = await ctx.db.insert("categories", {
         name: category.name,
@@ -109,29 +117,23 @@ export const init = internalMutation({
         icon: category.icon,
         color: category.color,
       });
-      let featuredItemId;
+      const itemIds = new Map<string, Id<"menuItems">>();
       for (const [j, item] of category.items.entries()) {
-        const itemId = await ctx.db.insert("menuItems", {
-          categoryId,
-          name: item.name,
-          description: item.description,
-          position: j + 1,
-          sizes: item.sizes.map(([label, price]) => ({ key: slugify(label), label, price })),
-          enabled: true,
-          soldOut: false,
-        });
-        if (j === 0) featuredItemId = itemId;
+        itemIds.set(item.name, await insertItem(ctx, categoryId, item, j + 1));
       }
       await ctx.db.insert("heroSlides", {
         categoryId,
-        position: i + 1,
+        position: ++slidePosition,
         enabled: true,
         headline: category.headline,
         kicker: category.kicker,
-        featuredItemId,
+        featuredItemId: itemIds.get(category.items[0].name),
         pieceImageIds: [],
         credit: category.credit,
       });
+      for (const extra of category.extraSlides ?? []) {
+        await insertSlide(ctx, categoryId, extra, ++slidePosition, itemIds.get(extra.featured));
+      }
     }
 
     if ((await ctx.db.query("settings").first()) === null) {
@@ -141,3 +143,84 @@ export const init = internalMutation({
     return `Seeded ${MENU.length} categories, their hero slides and ${samples} sample orders.`;
   },
 });
+
+/**
+ * Brings an existing deployment up to the starting menu above: adds any of
+ * its items (by name) and extra slides (by headline) that a category doesn't
+ * have yet. Never changes, re-enables or removes anything already there — so
+ * an item an admin deleted on purpose comes back if you run it; check first.
+ * `npx convex run seed:addMissing [--prod]`
+ */
+export const addMissing = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const added: string[] = [];
+    for (const category of MENU) {
+      const found = await ctx.db
+        .query("categories")
+        .withIndex("by_slug", (q) => q.eq("slug", slugify(category.name)))
+        .unique();
+      if (found === null) continue;
+      const items = await ctx.db
+        .query("menuItems")
+        .withIndex("by_categoryId_and_position", (q) => q.eq("categoryId", found._id))
+        .take(100);
+      let lastItem = items.reduce((max, i) => Math.max(max, i.position), 0);
+      const itemIds = new Map(items.map((i) => [i.name, i._id]));
+      for (const item of category.items) {
+        if (itemIds.has(item.name)) continue;
+        itemIds.set(item.name, await insertItem(ctx, found._id, item, ++lastItem));
+        added.push(`item ${item.name}`);
+      }
+
+      const ownSlides = await ctx.db
+        .query("heroSlides")
+        .withIndex("by_categoryId", (q) => q.eq("categoryId", found._id))
+        .take(20);
+      for (const extra of category.extraSlides ?? []) {
+        if (ownSlides.some((s) => s.headline === extra.headline)) continue;
+        // Straight after the category's own slides: everything later moves down one.
+        const after = ownSlides.reduce((max, s) => Math.max(max, s.position), 0);
+        const later = await ctx.db
+          .query("heroSlides")
+          .withIndex("by_position", (q) => q.gt("position", after))
+          .take(100);
+        for (const slide of later) await ctx.db.patch("heroSlides", slide._id, { position: slide.position + 1 });
+        const slideId = await insertSlide(ctx, found._id, extra, after + 1, itemIds.get(extra.featured));
+        ownSlides.push((await ctx.db.get("heroSlides", slideId))!);
+        added.push(`slide ${extra.headline}`);
+      }
+    }
+    return added.length ? `Added ${added.join(", ")}.` : "Nothing missing — nothing changed.";
+  },
+});
+
+async function insertItem(ctx: MutationCtx, categoryId: Id<"categories">, item: SeedItem, position: number) {
+  return await ctx.db.insert("menuItems", {
+    categoryId,
+    name: item.name,
+    description: item.description,
+    position,
+    sizes: item.sizes.map(([label, price]) => ({ key: slugify(label), label, price })),
+    enabled: true,
+    soldOut: false,
+  });
+}
+
+async function insertSlide(
+  ctx: MutationCtx,
+  categoryId: Id<"categories">,
+  slide: ExtraSlide,
+  position: number,
+  featuredItemId: Id<"menuItems"> | undefined,
+) {
+  return await ctx.db.insert("heroSlides", {
+    categoryId,
+    position,
+    enabled: true,
+    headline: slide.headline,
+    kicker: slide.kicker,
+    featuredItemId,
+    pieceImageIds: [],
+  });
+}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { ADMIN_EMAIL, as, item, seeded, storeFile as upload, storefront, type T } from "./testkit.helpers";
 
@@ -149,6 +149,15 @@ describe("hero management", () => {
     ).rejects.toThrow(/its own category/);
   });
 
+  test("a category can have a further slide: coffee sits after the shakes slide", async () => {
+    const t = await seeded();
+    const slides = (await storefront(t)).slides;
+    const shakes = slides.findIndex((s) => s.headline === "BERRYLICIOUS");
+    expect(slides[shakes + 1]).toMatchObject({ headline: "BREWTIFUL", categoryName: "Shakes & Drinks" });
+    expect(slides[shakes + 1].featured?.name).toBe("Cappuccino");
+    expect(slides.at(-1)?.headline).toBe("SCOOPTACULAR");
+  });
+
   test("hides and reorders slides", async () => {
     const t = await seeded();
     const admin = await as(t, ADMIN_EMAIL);
@@ -237,5 +246,47 @@ describe("images", () => {
     await admin.mutation(api.hero.removePiece, { slideId, storageId: pieces[1] });
     expect((await storefront(t)).slides[0].pieceUrls).toHaveLength(3);
     expect(await exists(t, pieces[1])).toBe(false);
+  });
+});
+
+describe("bringing a deployment up to the starting menu", () => {
+  test("adds missing items and slides in place, and leaves everything else alone", async () => {
+    const t = await seeded();
+    const admin = await as(t, ADMIN_EMAIL);
+    // A deployment from before the coffee: no cappuccino, no coffee slide, and an edited price.
+    const cappuccino = await item(t, "Cappuccino");
+    const coffee = (await storefront(t)).slides.find((s) => s.headline === "BREWTIFUL")!;
+    await t.run(async (ctx) => {
+      await ctx.db.delete("heroSlides", coffee._id);
+      await ctx.db.delete("menuItems", cappuccino._id);
+    });
+    const espresso = await item(t, "Double Espresso");
+    await admin.mutation(api.catalog.updateItem, {
+      itemId: espresso._id,
+      sizes: [{ label: "Regular", price: 999 }],
+    });
+
+    expect(await t.mutation(internal.seed.addMissing, {})).toBe("Added item Cappuccino, slide BREWTIFUL.");
+    const slides = (await storefront(t)).slides;
+    const shakes = slides.findIndex((s) => s.headline === "BERRYLICIOUS");
+    expect(slides[shakes + 1]).toMatchObject({ headline: "BREWTIFUL" });
+    expect(slides[shakes + 1].featured?.name).toBe("Cappuccino");
+    expect(slides.at(-1)?.headline).toBe("SCOOPTACULAR");
+    expect((await item(t, "Double Espresso")).sizes[0].price).toBe(999);
+
+    expect(await t.mutation(internal.seed.addMissing, {})).toBe("Nothing missing — nothing changed.");
+  });
+
+  test("the image import can point a category's further slide at a clip", async () => {
+    const t = await seeded();
+    const clip = await upload(t, "video/mp4", 2048);
+    const target = { kind: "heroVideo" as const, categorySlug: "shakes-drinks", headline: "BREWTIFUL" };
+    expect(await t.mutation(internal.assets.attach, { storageId: clip, target })).toBeNull();
+    const slides = (await storefront(t)).slides;
+    expect(slides.find((s) => s.headline === "BREWTIFUL")?.heroVideoUrl).toMatch(/^https?:\/\//);
+    expect(slides.find((s) => s.headline === "BERRYLICIOUS")?.heroVideoUrl).toBeNull();
+    await expect(
+      t.mutation(internal.assets.attach, { storageId: clip, target: { ...target, headline: "NOPE" } }),
+    ).rejects.toThrow(/no hero slide called NOPE/);
   });
 });

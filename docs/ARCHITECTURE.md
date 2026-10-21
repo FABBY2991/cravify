@@ -49,9 +49,10 @@ the static layout (no entrances, no focus move, no autoplay until they press pla
 - **Focus cards** (`MenuSection.tsx`): hovering a menu card (or tapping it on
   a touch screen) glides it part-way to the middle of the screen, a little
   larger, above a veil that blurs and dims the rest. The `<li>` stays in the
-  grid as the hover target and measure; only the card inside moves. Focus
-  waits for hover intent and for scrolling to stop; Escape, scrolling away,
-  resizing or tapping the veil lets it go.
+  grid as the hover target and measure; only the card inside moves. A card
+  pops after the pointer rests on it for 2 seconds (and scrolling has
+  stopped); leaving it, Escape, scrolling away, resizing or tapping the veil
+  lets it go.
 - **Scroll entrances** (`reveal.ts`): cards come down a touch into place, once,
   a row at a time.
 - **Cart** (`CartDrawer.tsx`): slower ease-out open, softer close, rows and
@@ -65,7 +66,7 @@ the static layout (no entrances, no focus move, no autoplay until they press pla
 | --- | --- | --- |
 | `categories` | name, slug, position, enabled, icon, **colour** | Colour is both the hero slide background and the menu tile colour. |
 | `menuItems` | category, name, description, position, **sizes** `[{key,label,price}]`, image, enabled, soldOut | 1–4 sizes; prices are whole KES. Disabled = hidden; sold out = shown greyed and unorderable. |
-| `heroSlides` | category, position, enabled, headline, kicker, featured item, hero cut-out, ≤4 pieces, optional clip, optional credit | One per category; a new category gets one, switched off. |
+| `heroSlides` | category, position, enabled, headline, kicker, featured item, hero cut-out, ≤4 pieces, optional clip, optional credit | One per category (a new category gets one, switched off), plus any further slides — Shakes & Drinks also has the coffee slide. |
 | `settings` | delivery fee, hours, location, concept credit | Single row (`key: "site"`); defaults until saved. |
 | `orders` | secret token, code, status, fulfilment, name, synthetic phone, area, note, totals, source, placedAt, Nairobi day, timeline | `source` = `visitor` or `sample`. |
 | `orderItems` | order, item, name/size/price **as ordered**, quantity, line total | Snapshots survive menu edits and deletions. |

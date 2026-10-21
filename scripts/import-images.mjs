@@ -47,7 +47,7 @@ async function attach(file, kind, target) {
   const { storageId, kb } = await upload(file, kind);
   const refused = convex("assets:attach", { storageId, target });
   if (refused) throw new Error(`${file}: ${refused}`);
-  console.log(`✓ ${file} → ${target.kind} ${target.itemName ?? target.categorySlug} (${kb} KB)`);
+  console.log(`✓ ${file} → ${target.kind} ${target.itemName ?? target.headline ?? target.categorySlug} (${kb} KB)`);
 }
 
 console.log(`Importing to the ${prod ? "PRODUCTION" : "dev"} deployment…`);
@@ -55,11 +55,13 @@ for (const entry of manifest.items ?? []) {
   await attach(entry.file, "item", { kind: "item", categorySlug: entry.category, itemName: entry.item });
 }
 for (const slide of manifest.slides ?? []) {
-  if (slide.image) await attach(slide.image, "hero", { kind: "heroImage", categorySlug: slide.category });
-  if (slide.video) await attach(slide.video, "video", { kind: "heroVideo", categorySlug: slide.category });
+  // A category's first slide, or — with "headline" — its further slide of that name.
+  const which = { categorySlug: slide.category, ...(slide.headline && { headline: slide.headline }) };
+  if (slide.image) await attach(slide.image, "hero", { kind: "heroImage", ...which });
+  if (slide.video) await attach(slide.video, "video", { kind: "heroVideo", ...which });
   if (slide.pieces) {
-    convex("assets:clearPieces", { categorySlug: slide.category });
-    for (const piece of slide.pieces) await attach(piece, "piece", { kind: "piece", categorySlug: slide.category });
+    convex("assets:clearPieces", which);
+    for (const piece of slide.pieces) await attach(piece, "piece", { kind: "piece", ...which });
   }
 }
 console.log("Done.");

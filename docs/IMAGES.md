@@ -35,7 +35,8 @@ creator of borrowed media in the slide's *Credit* field.
 1. Put the originals in `images-incoming/<category>/` (git ignores them).
 2. List them in `images-incoming/manifest.json` — item photos by item name,
    slide art by category slug (`burgers`, `pizza`, `fried-chicken`,
-   `shakes-drinks`, `desserts`).
+   `shakes-drinks`, `desserts`). A category's further slide (the coffee slide
+   under `shakes-drinks`) is named by its `"headline"` too.
 3. `npm run images` (dev) or `npm run images -- --prod`.
 
 Item photos are cropped to 4:3 at 960×720; heroes fit within 1400 px; pieces
